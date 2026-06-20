@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { createClient } from './whatsapp/client';
-import { run } from './commands/run';
-import { pipe } from './commands/pipe';
+import { execute } from './commands/run';
+import { read } from './commands/pipe';
 import { login } from './commands/login';
 import { logout } from './commands/logout';
 import { status } from './commands/status';
+import { sendNotification } from './notifier';
 
 const program = new Command();
 
@@ -37,32 +37,16 @@ program
   .allowUnknownOption()
   .argument('[command...]', 'comando a ejecutar (ej: npm run build)')
   .action(async (cmdArgs: string[]) => {
-    const phone = process.env.NOTIFY_WA_PHONE;
-    if (!phone) {
-      console.error('Error: variable de entorno NOTIFY_WA_PHONE no definida.');
-      console.error('  Ejemplo: $env:NOTIFY_WA_PHONE="521234567890"');
-      process.exit(1);
-    }
-
-    const client = await createClient();
-    await client.initialize();
-    await run(cmdArgs, phone);
+    const { message } = await execute(cmdArgs);
+    await sendNotification(message);
   });
 
 program
   .command('pipe')
   .description('Leer entrada por pipe y notificar al cerrarse')
   .action(async () => {
-    const phone = process.env.NOTIFY_WA_PHONE;
-    if (!phone) {
-      console.error('Error: variable de entorno NOTIFY_WA_PHONE no definida.');
-      console.error('  Ejemplo: $env:NOTIFY_WA_PHONE="521234567890"');
-      process.exit(1);
-    }
-
-    const client = await createClient();
-    await client.initialize();
-    await pipe(phone);
+    const { message } = await read();
+    await sendNotification(message);
   });
 
 program.parse(process.argv);

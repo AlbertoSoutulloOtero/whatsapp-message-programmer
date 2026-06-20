@@ -14,6 +14,7 @@ Training an AI model for hours? Long build times? Tests taking forever? Instead 
 | **commander** | Framework for building the command-line interface (CLI) |
 | **qrcode-terminal** | Renders QR codes directly in the terminal for login |
 | **Puppeteer** | Headless Chromium browser used internally by whatsapp-web.js |
+| **@puppeteer/browsers** | Programmatic Chrome install/detection (replaces postinstall shell script) |
 
 ## Installation
 
@@ -42,21 +43,11 @@ First time only:
 notify-wa login
 ```
 
-A QR code will appear in your terminal. Scan it with WhatsApp (menu → Linked devices → Link a device). The session is saved for future use.
+> If you don't have Chrome installed, Chromium (~170MB) will be downloaded automatically to `~/.cache/puppeteer/` the first time you run `notify-wa login` or `notify-wa run`. If you already have Chrome installed, it will be detected and used instead.
 
-### 2. Set your phone number
+A QR code will appear in your terminal. Scan it with WhatsApp (menu → Linked devices → Link a device). Your phone number is automatically detected from the session and saved. The session is persisted to `~/.notify-wa/session/` for future use.
 
-```bash
-# Windows PowerShell
-$env:NOTIFY_WA_PHONE="521234567890"
-
-# Linux / macOS / Git Bash
-export NOTIFY_WA_PHONE="521234567890"
-```
-
-Format: country code + phone number, no `+`, no spaces, no dashes.
-
-### 3a. Wrapper mode (recommended)
+### 2. Wrapper mode (recommended)
 
 Run any command and get notified when it finishes:
 
@@ -68,7 +59,7 @@ notify-wa run -- npx jest --watch
 
 You'll see the command output live in your terminal. When it finishes, the WhatsApp notification arrives.
 
-### 3b. Pipe mode
+### 3. Pipe mode
 
 Capture the output of an existing process:
 
@@ -112,8 +103,9 @@ src/
 ├── index.ts              ← Entry point (commander)
 ├── config.ts             ← Configuration paths
 ├── formatter.ts          ← WhatsApp message formatting
+├── notifier.ts           ← WhatsApp connection & notification sending
 ├── whatsapp/
-│   └── client.ts         ← WhatsApp client (singleton)
+│   └── client.ts         ← WhatsApp client (singleton + Chrome detection)
 ├── process/
 │   ├── wrapper.ts        ← Child process execution
 │   └── pipe-handler.ts   ← Stdin reading
